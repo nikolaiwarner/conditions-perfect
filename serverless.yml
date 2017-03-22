@@ -1,0 +1,10 @@
+service: conditions-perfect
+provider:
+  name: aws
+  runtime: nodejs4.3
+functions:
+  checkConditions:
+    handler: handler.checkConditions
+    events:
+      # 5pm est everyday (9pm utc)
+      - schedule: cron(0 21 * * ? *)
