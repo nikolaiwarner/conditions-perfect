@@ -1,14 +1,16 @@
 'use strict'
 
 let http = require('http')
+let https = require('https')
+require('dotenv').config()
 
-const apiKey = ''
 const perfect = {
-  temperature: 64
+  zipCode: process.env.zipCode,
+  temperature: process.env.temperature
 }
 
 let getCurrentWeather = (zipCode, callback) => {
-  http.get(`http://api.wunderground.com/api/${apiKey}/conditions/q/${zipCode}.json`, (res) => {
+  http.get(`http://api.wunderground.com/api/${process.env.wundergroundApiKey}/conditions/q/${zipCode}.json`, (res) => {
     res.setEncoding('utf8')
     let rawData = ''
     res.on('data', (chunk) => { rawData += chunk })
@@ -22,13 +24,23 @@ let getCurrentWeather = (zipCode, callback) => {
   })
 }
 
+let postToWebhook = (data) => {
+  var req = https.request({
+    host: process.env.successWebhookHost,
+    path: process.env.successWebhookPath,
+    method: 'POST'
+  })
+  req.write(JSON.stringify(data))
+  req.end()
+}
+
 module.exports.checkConditions = (event, context, callback) => {
-  getCurrentWeather(40505, (currentWeather) => {
+  getCurrentWeather(perfect.zipCode, (currentWeather) => {
     let conditionsPerfect = false
     let temperature = currentWeather.current_observation.temp_f
     if (temperature > perfect.temperature) {
       conditionsPerfect = true
-      // Send notification....
+      postToWebhook({Value1: temperature})
     }
 
     const response = {

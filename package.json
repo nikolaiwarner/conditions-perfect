@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "main": "handler.js",
   "repository": {},
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^4.0.0"
+  }
 }

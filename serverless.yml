@@ -8,3 +8,4 @@ functions:
     events:
       # 5pm est everyday (9pm utc)
       - schedule: cron(0 21 * * ? *)
+      - http: GET check
