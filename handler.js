@@ -6,7 +6,8 @@ require('dotenv').config()
 
 const perfect = {
   zipCode: process.env.zipCode,
-  temperature: process.env.temperature
+  temperature: process.env.temperature,
+  maxPrecipitation: process.env.maxPrecipitation
 }
 
 let getCurrentWeather = (zipCode, callback) => {
@@ -37,10 +38,13 @@ let postToWebhook = (data) => {
 module.exports.checkConditions = (event, context, callback) => {
   getCurrentWeather(perfect.zipCode, (currentWeather) => {
     let conditionsPerfect = false
-    let temperature = currentWeather.current_observation.temp_f
-    if (temperature > perfect.temperature) {
-      conditionsPerfect = true
-      postToWebhook({Value1: temperature})
+    let temperature = parseFloat(currentWeather.current_observation.feelslike_f)
+    let precipitationInTheNextHour = parseFloat(currentWeather.current_observation.precip_1hr_in)
+    if (temperature >= perfect.temperature) {
+      if (precipitationInTheNextHour < perfect.maxPrecipitation) {
+        conditionsPerfect = true
+        postToWebhook({Value1: temperature})
+      }
     }
 
     const response = {
