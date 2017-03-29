@@ -6,7 +6,8 @@ require('dotenv').config()
 
 const perfect = {
   zipCode: process.env.zipCode,
-  temperature: process.env.temperature,
+  minTemperature: process.env.minTemperature,
+  maxTemperature: process.env.maxTemperature,
   maxPrecipitation: process.env.maxPrecipitation
 }
 
@@ -41,7 +42,7 @@ module.exports.checkConditions = (event, context, callback) => {
     let excuses = []
 
     let temperature = parseFloat(currentWeather.current_observation.feelslike_f)
-    if (temperature < perfect.temperature) {
+    if ((temperature < perfect.minTemperature) || (temperature > perfect.maxTemperature)) {
       conditionsPerfect = false
       excuses.push({temperature})
     }
