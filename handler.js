@@ -25,31 +25,43 @@ let getCurrentWeather = (zipCode, callback) => {
   })
 }
 
-let postToWebhook = (data) => {
+let postToWebhook = () => {
   var req = https.request({
     host: process.env.successWebhookHost,
     path: process.env.successWebhookPath,
     method: 'POST'
   })
-  req.write(JSON.stringify(data))
+  req.write(JSON.stringify(perfect))
   req.end()
 }
 
 module.exports.checkConditions = (event, context, callback) => {
   getCurrentWeather(perfect.zipCode, (currentWeather) => {
-    let conditionsPerfect = false
+    let conditionsPerfect = true
+    let excuses = []
+
     let temperature = parseFloat(currentWeather.current_observation.feelslike_f)
+    if (temperature < perfect.temperature) {
+      conditionsPerfect = false
+      excuses.push({temperature})
+    }
+
     let precipitationInTheNextHour = parseFloat(currentWeather.current_observation.precip_1hr_in)
-    if (temperature >= perfect.temperature) {
-      if (precipitationInTheNextHour < perfect.maxPrecipitation) {
-        conditionsPerfect = true
-        postToWebhook({Value1: temperature})
-      }
+    if (precipitationInTheNextHour > perfect.maxPrecipitation) {
+      conditionsPerfect = false
+      excuses.push({precipitationInTheNextHour})
+    }
+
+    if (conditionsPerfect) {
+      postToWebhook()
     }
 
     const response = {
       statusCode: 200,
-      body: conditionsPerfect
+      body: JSON.stringify({
+        conditionsPerfect,
+        excuses
+      })
     }
     callback(null, response)
   })
